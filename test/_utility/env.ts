@@ -7,6 +7,7 @@ for (const key of <(keyof typeof window)[]> [
 	"document",
 	"requestAnimationFrame",
 	"MutationObserver",
+	"Node",
 	"Element",
 	"NodeFilter"
 ]) {

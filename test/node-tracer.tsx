@@ -1,17 +1,17 @@
 import test from "ava";
 import { NodeTracer } from "../src/node-tracer";
-import { html } from "./_utility/dom";
 import { microtask } from "./_utility/timing";
+import { createElement } from "./_utility/html";
 
 test("falls back to siblings", async t => {
-	const doc = html(`
+	let target: HTMLElement = null!;
+	<div>
 		prev
-		<div id="target"></div>
+		<div ref={v => target = v}></div>
 		next
-	`);
+	</div>;
 
 	const tracer = new NodeTracer();
-	const target = doc.getElementById("target")!;
 	const prev = target.previousSibling;
 	const next = target.nextSibling;
 	tracer.target = target;
@@ -29,14 +29,15 @@ test("falls back to siblings", async t => {
 });
 
 test("falls back to parent siblings if the target is removed", async t => {
-	const doc = html(`
+	let target: HTMLElement = null!;
+
+	<div>
 		prev
-		<div><div id="target"></div></div>
+		<div><div ref={v => target = v}></div></div>
 		next
-	`);
+	</div>;
 
 	const tracer = new NodeTracer();
-	const target = doc.getElementById("target")!;
 	const prev = target.parentNode!.previousSibling;
 	const next = target.parentNode!.nextSibling;
 
@@ -55,14 +56,15 @@ test("falls back to parent siblings if the target is removed", async t => {
 });
 
 test("falls back to parent siblings if the parent is removed", async t => {
-	const doc = html(`
+	let target: HTMLElement = null!;
+
+	<div>
 		prev
-		<div><div id="target"></div></div>
+		<div><div ref={v => target = v}></div></div>
 		next
-	`);
+	</div>;
 
 	const tracer = new NodeTracer();
-	const target = doc.getElementById("target")!;
 	const prev = target.parentNode!.previousSibling;
 	const next = target.parentNode!.nextSibling;
 
@@ -81,10 +83,12 @@ test("falls back to parent siblings if the parent is removed", async t => {
 });
 
 test("falls back to no siblings if missing", async t => {
-	const doc = html(`<div id="target"></div>`);
+	let target: HTMLElement = null!;
+	<div>
+		<div ref={v => target = v}></div>
+	</div>;
 
 	const tracer = new NodeTracer();
-	const target = doc.getElementById("target")!;
 	tracer.target = target;
 
 	t.is(tracer.target, target);

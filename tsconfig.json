@@ -5,7 +5,9 @@
 		"moduleResolution": "Node",
 		"declaration": true,
 		"sourceMap": true,
-		"strict": true
+		"strict": true,
+		"jsx": "react",
+		"jsxFactory": "createElement"
 	},
 	"include": [
 		"src",
