@@ -102,3 +102,49 @@ test("falls back to no siblings if missing", async t => {
 	t.is(tracer.previousSibling, null);
 	t.is(tracer.nextSibling, null);
 });
+
+test("falls back to outer siblings when siblings are removed", async t => {
+	let target: HTMLElement = null!;
+	<div>
+		<span />
+		prev
+		<div ref={v => target = v}></div>
+		next
+		<span />
+	</div>;
+
+	const tracer = new NodeTracer();
+	const prev = target.previousSibling!;
+	const next = target.nextSibling!;
+	const outerPrev = prev.previousSibling!;
+	const outerNext = next.nextSibling!;
+
+	tracer.target = target;
+
+	t.is(tracer.target, target);
+	t.is(tracer.previousSibling, null);
+	t.is(tracer.nextSibling, null);
+
+	target.remove();
+	await microtask();
+
+	t.is(tracer.target, null);
+	t.is(tracer.previousSibling, prev);
+	t.is(tracer.nextSibling, next);
+
+	prev.remove();
+	next.remove();
+	await microtask();
+
+	t.is(tracer.target, null);
+	t.is(tracer.previousSibling, outerPrev);
+	t.is(tracer.nextSibling, outerNext);
+
+	outerPrev.remove();
+	outerNext.remove();
+	await microtask();
+
+	t.is(tracer.target, null);
+	t.is(tracer.previousSibling, null);
+	t.is(tracer.nextSibling, null);
+});

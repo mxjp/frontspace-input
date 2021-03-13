@@ -49,11 +49,11 @@ export class NodeTracer {
 							}
 							this._observers.length = i;
 							this._nodes.length = i + 1;
-						} else if (this._target === null) {
-							if (this._previousSibling !== null && removedNodes.has(this._previousSibling)) {
+						} else if (!this._target) {
+							if (this._previousSibling && removedNodes.has(this._previousSibling)) {
 								this._previousSibling = getPreviousSibling(record, target);
 							}
-							if (this._nextSibling !== null && removedNodes.has(this._nextSibling)) {
+							if (this._nextSibling && removedNodes.has(this._nextSibling)) {
 								this._nextSibling = getNextSibling(record, target);
 							}
 						}
@@ -103,15 +103,15 @@ interface Observer {
 }
 
 function getPreviousSibling(parentRecord: MutationRecord, node: Node | null) {
-	if (parentRecord.previousSibling !== null) {
+	if (parentRecord.previousSibling) {
 		return parentRecord.previousSibling;
 	}
-	if (node !== null && node.previousSibling !== null) {
+	if (node && node.previousSibling) {
 		return node.previousSibling;
 	}
 	let parent: Node | null = parentRecord.target;
-	while (parent !== null) {
-		if (parent.previousSibling !== null) {
+	while (parent) {
+		if (parent.previousSibling) {
 			return parent.previousSibling;
 		}
 		parent = parent.parentNode;
@@ -120,15 +120,15 @@ function getPreviousSibling(parentRecord: MutationRecord, node: Node | null) {
 }
 
 function getNextSibling(parentRecord: MutationRecord, node: Node | null) {
-	if (parentRecord.nextSibling !== null) {
+	if (parentRecord.nextSibling) {
 		return parentRecord.nextSibling;
 	}
-	if (node !== null && node.nextSibling !== null) {
+	if (node && node.nextSibling) {
 		return node.nextSibling;
 	}
 	let parent: Node | null = parentRecord.target;
-	while (parent !== null) {
-		if (parent.nextSibling !== null) {
+	while (parent) {
+		if (parent.nextSibling) {
 			return parent.nextSibling;
 		}
 		parent = parent.parentNode;
