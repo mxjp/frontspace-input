@@ -148,3 +148,60 @@ test("falls back to outer siblings when siblings are removed", async t => {
 	t.is(tracer.previousSibling, null);
 	t.is(tracer.nextSibling, null);
 });
+
+test("ignores external changes when a root is specified", async t => {
+	let root: HTMLElement = null!;
+	let target: HTMLElement = null!;
+
+	<div>
+		<div ref={v => root = v}>
+			<div ref={v => target = v} />
+		</div>
+	</div>;
+
+	const tracer = new NodeTracer(root);
+	tracer.target = target;
+
+	t.is(tracer.target, target);
+
+	root.remove();
+	await microtask();
+
+	t.is(tracer.target, target);
+});
+
+test("ignores external siblings when a root is specified", async t => {
+	let root: HTMLElement = null!;
+	let target: HTMLElement = null!;
+
+	<div>
+		external prev
+		<div ref={v => root = v}>
+			prev
+			<div ref={v => target = v} />
+			next
+		</div>
+		external next
+	</div>;
+
+	const prev = target.previousSibling!;
+	const next = target.nextSibling!;
+
+	const tracer = new NodeTracer(root);
+	tracer.target = target;
+
+	target.remove();
+	await microtask();
+
+	t.is(tracer.target, null);
+	t.is(tracer.previousSibling, prev);
+	t.is(tracer.nextSibling, next);
+
+	prev.remove();
+	next.remove();
+	await microtask();
+
+	t.is(tracer.target, null);
+	t.is(tracer.previousSibling, null);
+	t.is(tracer.nextSibling, null);
+});

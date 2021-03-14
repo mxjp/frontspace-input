@@ -3,6 +3,15 @@
  * An object that keeps renference to a node. When the node or a parent is removed, the tracer will keep track of it's siblings. This can be used to approximate the location of a node in a document after it has been removed.
  */
 export class NodeTracer {
+	/**
+	 * Create a new node tracer.
+	 * @param root If specified, any parent nodes of this root node will not be observed.
+	 */
+	public constructor(root: Node | null = null) {
+		this._root = root;
+	}
+
+	private _root: Node | null;
 	private _nodes: Node[] = [];
 	private _observers: Observer[] = [];
 	private _target: Node | null = null;
@@ -14,7 +23,7 @@ export class NodeTracer {
 	 *
 	 * After the target or a parent has been removed, this will return null.
 	 */
-	 public get target(): Node | null {
+	public get target(): Node | null {
 		return this._target;
 	}
 
@@ -26,6 +35,9 @@ export class NodeTracer {
 		this._nodes = [];
 		while (value) {
 			this._nodes.unshift(value);
+			if (value === this._root) {
+				break;
+			}
 			value = value.parentNode;
 		}
 
@@ -42,8 +54,8 @@ export class NodeTracer {
 						const target = this._nodes[i + 1];
 						if (removedNodes.has(target)) {
 							this._target = null;
-							this._previousSibling = getPreviousSibling(record, target);
-							this._nextSibling = getNextSibling(record, target);
+							this._previousSibling = this.getPreviousSibling(record, target);
+							this._nextSibling = this.getNextSibling(record, target);
 							for (let d = i + 1; d < this._observers.length; d++) {
 								this._observers[d].observer.disconnect();
 							}
@@ -51,10 +63,10 @@ export class NodeTracer {
 							this._nodes.length = i + 1;
 						} else if (!this._target) {
 							if (this._previousSibling && removedNodes.has(this._previousSibling)) {
-								this._previousSibling = getPreviousSibling(record, target);
+								this._previousSibling = this.getPreviousSibling(record, target);
 							}
 							if (this._nextSibling && removedNodes.has(this._nextSibling)) {
-								this._nextSibling = getNextSibling(record, target);
+								this._nextSibling = this.getNextSibling(record, target);
 							}
 						}
 					}
@@ -95,43 +107,61 @@ export class NodeTracer {
 	public disconnect() {
 		this.target = null;
 	}
+
+	/**
+	 * Called to get the previous sibling for a node that has been removed.
+	 * @param parentRecord A mutation record for the parent node.
+	 * @param node The removed node.
+	 * @returns The sibling or null if there is none.
+	 */
+	protected getPreviousSibling(parentRecord: MutationRecord, node: Node | null) {
+		if (parentRecord.previousSibling) {
+			return parentRecord.previousSibling;
+		}
+		if (node && node.previousSibling) {
+			return node.previousSibling;
+		}
+		let parent: Node | null = parentRecord.target;
+		while (parent) {
+			if (parent === this._root) {
+				return null;
+			}
+			if (parent.previousSibling) {
+				return parent.previousSibling;
+			}
+			parent = parent.parentNode;
+		}
+		return null;
+	}
+
+	/**
+	 * Called to get the next sibling for a node that has been removed.
+	 * @param parentRecord A mutation record for the parent node.
+	 * @param node The removed node.
+	 * @returns The sibling or null if there is none.
+	 */
+	protected getNextSibling(parentRecord: MutationRecord, node: Node | null) {
+		if (parentRecord.nextSibling) {
+			return parentRecord.nextSibling;
+		}
+		if (node && node.nextSibling) {
+			return node.nextSibling;
+		}
+		let parent: Node | null = parentRecord.target;
+		while (parent) {
+			if (parent === this._root) {
+				return null;
+			}
+			if (parent.nextSibling) {
+				return parent.nextSibling;
+			}
+			parent = parent.parentNode;
+		}
+		return null;
+	}
 }
 
 interface Observer {
 	readonly observer: MutationObserver;
 	readonly node: Node;
-}
-
-function getPreviousSibling(parentRecord: MutationRecord, node: Node | null) {
-	if (parentRecord.previousSibling) {
-		return parentRecord.previousSibling;
-	}
-	if (node && node.previousSibling) {
-		return node.previousSibling;
-	}
-	let parent: Node | null = parentRecord.target;
-	while (parent) {
-		if (parent.previousSibling) {
-			return parent.previousSibling;
-		}
-		parent = parent.parentNode;
-	}
-	return null;
-}
-
-function getNextSibling(parentRecord: MutationRecord, node: Node | null) {
-	if (parentRecord.nextSibling) {
-		return parentRecord.nextSibling;
-	}
-	if (node && node.nextSibling) {
-		return node.nextSibling;
-	}
-	let parent: Node | null = parentRecord.target;
-	while (parent) {
-		if (parent.nextSibling) {
-			return parent.nextSibling;
-		}
-		parent = parent.parentNode;
-	}
-	return null;
 }
