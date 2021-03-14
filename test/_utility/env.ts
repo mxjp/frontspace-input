@@ -9,6 +9,8 @@ for (const key of <(keyof typeof window)[]> [
 	"MutationObserver",
 	"Node",
 	"Element",
+	"HTMLElement",
+	"HTMLInputElement",
 	"NodeFilter",
 	"getComputedStyle"
 ]) {
