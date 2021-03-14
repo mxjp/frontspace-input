@@ -9,7 +9,8 @@ for (const key of <(keyof typeof window)[]> [
 	"MutationObserver",
 	"Node",
 	"Element",
-	"NodeFilter"
+	"NodeFilter",
+	"getComputedStyle"
 ]) {
 	(global as any)[key] = dom.window[key];
 }
