@@ -347,6 +347,32 @@ test.serial(`${Controller.prototype.createInputLayer.name}: create & dispose`, t
 	t.is(controller.inputLayer, document.body);
 });
 
+test.serial(`${Controller.prototype.createInputLayer.name}: create & duplicate dispose`, t => {
+	const controller = createController(t);
+	t.is(controller.inputLayer, document.body);
+	const aElem = attach(t, <div />);
+	const bElem = attach(t, <div />);
+	const a = controller.createInputLayer(aElem);
+	t.is(controller.inputLayer, aElem);
+	const b = controller.createInputLayer(bElem);
+	t.is(controller.inputLayer, bElem);
+	a.dispose();
+	a.dispose();
+	t.is(controller.inputLayer, bElem);
+	b.dispose();
+	b.dispose();
+	t.is(controller.inputLayer, document.body);
+});
+
+test.serial(`${Controller.prototype.createInputLayer.name}: disallow duplicate layers`, t => {
+	const controller = createController(t);
+	const root = attach(t, <div />);
+	const a = controller.createInputLayer(root);
+	t.throws(() => controller.createInputLayer(root));
+	a.dispose();
+	controller.createInputLayer(root);
+});
+
 test.serial(`${Controller.prototype.createInputLayer.name}: no last active element`, t => {
 	const controller = createController(t);
 	const layer = controller.createInputLayer(attach(t, <div />));

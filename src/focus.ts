@@ -56,6 +56,7 @@ export function isFocusUnpreferred(node: Node) {
 export function createFocusableElementsWalker(root: Node, includeUnpreferred = false) {
 	return document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
 		acceptNode(node) {
+			/* istanbul ignore else */
 			if (node instanceof HTMLElement) {
 				if (!isElementVisible(node) || (node as any).disabled) {
 					return NodeFilter.FILTER_REJECT;

@@ -139,9 +139,6 @@ export class NodeTracer {
 		if (parentRecord.previousSibling) {
 			return parentRecord.previousSibling;
 		}
-		if (node && node.previousSibling) {
-			return node.previousSibling;
-		}
 		let parent: Node | null = parentRecord.target;
 		while (parent) {
 			if (parent === this._root) {
@@ -164,9 +161,6 @@ export class NodeTracer {
 	protected getNextSibling(parentRecord: MutationRecord, node: Node | null) {
 		if (parentRecord.nextSibling) {
 			return parentRecord.nextSibling;
-		}
-		if (node && node.nextSibling) {
-			return node.nextSibling;
 		}
 		let parent: Node | null = parentRecord.target;
 		while (parent) {

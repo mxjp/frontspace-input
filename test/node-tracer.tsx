@@ -6,6 +6,35 @@ import { createElement } from "./_utility/html";
 for (const immediate of [true, false]) {
 	const suffix = immediate ? "(immediate)" : "";
 
+	test(`allows switching nested targets within same parent ${suffix}`, async t => {
+		let a!: HTMLElement;
+		let bPrev!: HTMLElement;
+		let b!: HTMLElement;
+		<div>
+			<div ref={v => bPrev = v}>
+				<div ref={v => a = v} />
+			</div>
+			<div>
+				<div ref={v => b = v} />
+			</div>
+		</div>;
+
+		const tracer = new NodeTracer();
+		tracer.target = a;
+		tracer.target = b;
+
+		t.is(tracer.target, b);
+
+		b.remove();
+		if (!immediate) {
+			await microtask();
+		}
+
+		t.is(tracer.target, null);
+		t.is(tracer.previousSibling, bPrev);
+		t.is(tracer.nextSibling, null);
+	});
+
 	test(`falls back to siblings ${suffix}`, async t => {
 		let target: HTMLElement = null!;
 		<div>

@@ -8,6 +8,26 @@ test(`${isElementVisible.name}: detached element`, t => {
 	t.false(isElementVisible(element));
 });
 
+test(`${isElementVisible.name}: unconnected element`, t => {
+	const element = <div />;
+	// jsdom does currently not support offsetParent, so the following properties are faked.
+	Object.defineProperties(element, {
+		isConnected: { value: false },
+		offsetParent: { value: document.body }
+	});
+	t.false(isElementVisible(element));
+});
+
+test(`${isElementVisible.name}: connected elements`, t => {
+	const element = <div />;
+	// jsdom does currently not support offsetParent, so the following properties are faked.
+	Object.defineProperties(element, {
+		isConnected: { value: true },
+		offsetParent: { value: document.body }
+	});
+	t.true(isElementVisible(element));
+});
+
 test(`${isElementVisible.name}: detached nested element`, t => {
 	let element: HTMLElement = null!;
 	<div>
