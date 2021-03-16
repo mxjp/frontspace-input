@@ -24,6 +24,7 @@ export class NodeTracer {
 	 * After the target or a parent has been removed, this will return null.
 	 */
 	public get target(): Node | null {
+		this.processPendingMutations();
 		return this._target;
 	}
 
@@ -67,6 +68,7 @@ export class NodeTracer {
 	 * + If the target is still attached or there is no previous sibling, this will return null.
 	 */
 	public get previousSibling(): Node | null {
+		this.processPendingMutations();
 		return this._previousSibling;
 	}
 
@@ -75,6 +77,7 @@ export class NodeTracer {
 	 * + If the target is still attached or there is no previous sibling, this will return null.
 	 */
 	public get nextSibling(): Node | null {
+		this.processPendingMutations();
 		return this._nextSibling;
 	}
 
@@ -86,6 +89,18 @@ export class NodeTracer {
 	}
 
 	/**
+	 * Called to take and process pending mutation records from all observers.
+	 */
+	protected processPendingMutations() {
+		for (let i = 0; i < this._observers.length; i++) {
+			const records = this._observers[i].observer.takeRecords();
+			if (records.length > 0) {
+				this.processMutations(records, i);
+			}
+		}
+	}
+
+	/**
 	 * Called to process mutations detected by an observer.
 	 * @param nodeIndex The index of the node which's observer has detected the mutations.
 	 */
@@ -93,22 +108,22 @@ export class NodeTracer {
 		for (let i = 0; i < records.length; i++) {
 			const record = records[i];
 			const removedNodes = new Set(record.removedNodes);
-			const target = this._nodes[nodeIndex + 1];
-			if (removedNodes.has(target)) {
+			const nodeTarget = this._nodes[nodeIndex + 1];
+			if (nodeTarget && removedNodes.has(nodeTarget)) {
 				this._target = null;
-				this._previousSibling = this.getPreviousSibling(record, target);
-				this._nextSibling = this.getNextSibling(record, target);
+				this._previousSibling = this.getPreviousSibling(record, nodeTarget);
+				this._nextSibling = this.getNextSibling(record, nodeTarget);
 				for (let r = nodeIndex + 1; r < this._observers.length; r++) {
 					this._observers[r].observer.disconnect();
 				}
-				this._observers.length = nodeIndex;
+				this._observers.length = nodeIndex + 1;
 				this._nodes.length = nodeIndex + 1;
 			} else if (!this._target) {
 				if (this._previousSibling && removedNodes.has(this._previousSibling)) {
-					this._previousSibling = this.getPreviousSibling(record, target);
+					this._previousSibling = this.getPreviousSibling(record, nodeTarget);
 				}
 				if (this._nextSibling && removedNodes.has(this._nextSibling)) {
-					this._nextSibling = this.getNextSibling(record, target);
+					this._nextSibling = this.getNextSibling(record, nodeTarget);
 				}
 			}
 		}
