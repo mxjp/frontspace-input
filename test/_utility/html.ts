@@ -30,7 +30,8 @@ export function createElement(type: string, props: Record<string, any> | null, .
 	return element;
 }
 
-export function attach(t: ExecutionContext, node: Node) {
-	t.teardown(() => document.body.removeChild(node));
+export function attach<T extends Node>(t: ExecutionContext, node: T) {
+	t.teardown(() => node.parentNode?.removeChild(node));
 	document.body.appendChild(node);
+	return node;
 }
