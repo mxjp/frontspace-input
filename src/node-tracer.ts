@@ -102,28 +102,28 @@ export class NodeTracer {
 
 	/**
 	 * Called to process mutations detected by an observer.
-	 * @param nodeIndex The index of the node which's observer has detected the mutations.
+	 * @param observerIndex The index of the observer that has detected the mutations.
 	 */
-	protected processMutations(records: MutationRecord[], nodeIndex: number) {
+	protected processMutations(records: MutationRecord[], observerIndex: number) {
 		for (let i = 0; i < records.length; i++) {
 			const record = records[i];
 			const removedNodes = new Set(record.removedNodes);
-			const nodeTarget = this._nodes[nodeIndex + 1];
-			if (nodeTarget && removedNodes.has(nodeTarget)) {
+			const observerTarget = this._nodes[observerIndex + 1];
+			if (removedNodes.has(observerTarget)) {
 				this._target = null;
-				this._previousSibling = this.getPreviousSibling(record, nodeTarget);
-				this._nextSibling = this.getNextSibling(record, nodeTarget);
-				for (let r = nodeIndex + 1; r < this._observers.length; r++) {
+				this._previousSibling = this.getPreviousSibling(record, observerTarget);
+				this._nextSibling = this.getNextSibling(record, observerTarget);
+				for (let r = observerIndex + 1; r < this._observers.length; r++) {
 					this._observers[r].observer.disconnect();
 				}
-				this._observers.length = nodeIndex + 1;
-				this._nodes.length = nodeIndex + 1;
+				this._observers.length = observerIndex + 1;
+				this._nodes.length = observerIndex + 1;
 			} else if (!this._target) {
 				if (this._previousSibling && removedNodes.has(this._previousSibling)) {
-					this._previousSibling = this.getPreviousSibling(record, nodeTarget);
+					this._previousSibling = this.getPreviousSibling(record, observerTarget);
 				}
 				if (this._nextSibling && removedNodes.has(this._nextSibling)) {
-					this._nextSibling = this.getNextSibling(record, nodeTarget);
+					this._nextSibling = this.getNextSibling(record, observerTarget);
 				}
 			}
 		}

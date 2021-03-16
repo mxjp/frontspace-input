@@ -166,6 +166,58 @@ for (const immediate of [true, false]) {
 		t.is(tracer.nextSibling, null);
 	});
 
+	test(`falls back to outer siblings when the target parent is removed ${suffix}`, async t => {
+		let outerTarget!: HTMLElement;
+		let target!: HTMLElement;
+		const root = <div>
+			outer prev
+			<div ref={v => outerTarget = v}>
+				prev
+				<div ref={v => target = v}></div>
+				next
+			</div>
+			outer next
+		</div>;
+
+		const outerPrev = outerTarget.previousSibling!;
+		const prev = target.previousSibling!;
+		const next = target.nextSibling!;
+		const outerNext = outerTarget.nextSibling!;
+
+		const tracer = new NodeTracer(root);
+		tracer.target = target;
+
+		target.remove();
+		if (!immediate) {
+			await microtask();
+		}
+
+		t.is(tracer.target, null);
+		t.is(tracer.previousSibling, prev);
+		t.is(tracer.nextSibling, next);
+
+		outerTarget.remove();
+		if (!immediate) {
+			await microtask();
+		}
+
+		t.is(tracer.target, null);
+		t.is(tracer.previousSibling, outerPrev);
+		t.is(tracer.nextSibling, outerNext);
+
+		outerPrev.remove();
+		outerNext.remove();
+
+		outerTarget.remove();
+		if (!immediate) {
+			await microtask();
+		}
+
+		t.is(tracer.target, null);
+		t.is(tracer.previousSibling, null);
+		t.is(tracer.nextSibling, null);
+	});
+
 	test(`ignores external changes when a root is specified ${suffix}`, async t => {
 		let root: HTMLElement = null!;
 		let target: HTMLElement = null!;
