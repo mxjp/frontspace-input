@@ -1,5 +1,5 @@
 import test, { ExecutionContext } from "ava";
-import { Controller, ControllerOptions } from "../src";
+import { Controller, ControllerOptions } from "../src/controller";
 import { createElement, attach } from "./_utility/html";
 import { microtask } from "./_utility/timing";
 

@@ -11,6 +11,9 @@ export interface ControllerOptions {
 	cycleFocus?: boolean;
 }
 
+/**
+ * @deprecated
+ */
 export class Controller {
 	private readonly _overwriteFocusBehavior: boolean;
 	private readonly _keyboardEvents: string[];
