@@ -46,7 +46,4 @@ test.after(t => {
 	}
 
 	// TODO: Test cleanup of event handlers.
-
-	// TODO: Setup code coverage statistics.
-	// TODO: Ensure 100% branch coverage for all things that can be tested without mocking api provided by jsdom.
 });

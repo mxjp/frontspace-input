@@ -6,7 +6,7 @@ import { createElement } from "./_utility/html";
 for (const immediate of [true, false]) {
 	const suffix = immediate ? "(immediate)" : "";
 
-	test(`allows switching nested targets within same parent ${suffix}`, async t => {
+	test.serial(`allows switching nested targets within same parent ${suffix}`, async t => {
 		let a!: HTMLElement;
 		let bPrev!: HTMLElement;
 		let b!: HTMLElement;
@@ -35,7 +35,7 @@ for (const immediate of [true, false]) {
 		t.is(tracer.nextSibling, null);
 	});
 
-	test(`falls back to siblings ${suffix}`, async t => {
+	test.serial(`falls back to siblings ${suffix}`, async t => {
 		let target: HTMLElement = null!;
 		<div>
 			prev
@@ -62,7 +62,7 @@ for (const immediate of [true, false]) {
 		t.is(tracer.nextSibling, next);
 	});
 
-	test(`falls back to parent siblings if the target is removed ${suffix}`, async t => {
+	test.serial(`falls back to parent siblings if the target is removed ${suffix}`, async t => {
 		let target: HTMLElement = null!;
 
 		<div>
@@ -91,7 +91,7 @@ for (const immediate of [true, false]) {
 		t.is(tracer.nextSibling, next);
 	});
 
-	test(`falls back to parent siblings if the parent is removed ${suffix}`, async t => {
+	test.serial(`falls back to parent siblings if the parent is removed ${suffix}`, async t => {
 		let target: HTMLElement = null!;
 
 		<div>
@@ -120,7 +120,7 @@ for (const immediate of [true, false]) {
 		t.is(tracer.nextSibling, next);
 	});
 
-	test(`falls back to no siblings if missing ${suffix}`, async t => {
+	test.serial(`falls back to no siblings if missing ${suffix}`, async t => {
 		let target: HTMLElement = null!;
 		<div>
 			<div ref={v => target = v}></div>
@@ -143,7 +143,7 @@ for (const immediate of [true, false]) {
 		t.is(tracer.nextSibling, null);
 	});
 
-	test(`falls back to outer siblings when siblings are removed ${suffix}`, async t => {
+	test.serial(`falls back to outer siblings when siblings are removed ${suffix}`, async t => {
 		let target: HTMLElement = null!;
 		<div>
 			<span />
@@ -195,7 +195,7 @@ for (const immediate of [true, false]) {
 		t.is(tracer.nextSibling, null);
 	});
 
-	test(`falls back to outer siblings when the target parent is removed ${suffix}`, async t => {
+	test.serial(`falls back to outer siblings when the target parent is removed ${suffix}`, async t => {
 		let outerTarget!: HTMLElement;
 		let target!: HTMLElement;
 		const root = <div>
@@ -247,7 +247,7 @@ for (const immediate of [true, false]) {
 		t.is(tracer.nextSibling, null);
 	});
 
-	test(`ignores external changes when a root is specified ${suffix}`, async t => {
+	test.serial(`ignores external changes when a root is specified ${suffix}`, async t => {
 		let root: HTMLElement = null!;
 		let target: HTMLElement = null!;
 
@@ -270,7 +270,7 @@ for (const immediate of [true, false]) {
 		t.is(tracer.target, target);
 	});
 
-	test(`ignores external siblings when a root is specified ${suffix}`, async t => {
+	test.serial(`ignores external siblings when a root is specified ${suffix}`, async t => {
 		let root: HTMLElement = null!;
 		let target: HTMLElement = null!;
 

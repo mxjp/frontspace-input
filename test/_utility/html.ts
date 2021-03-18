@@ -35,3 +35,19 @@ export function attach<T extends Node>(t: ExecutionContext, node: T) {
 	document.body.appendChild(node);
 	return node;
 }
+
+export function attachAfter<T extends Node>(t: ExecutionContext, ref: Node, node: T) {
+	t.teardown(() => node.parentNode?.removeChild(node));
+	if (ref.nextSibling) {
+		ref.parentNode!.insertBefore(node, ref.nextSibling);
+	} else {
+		ref.parentNode!.appendChild(node);
+	}
+	return node;
+}
+
+export function attachBefore<T extends Node>(t: ExecutionContext, ref: Node, node: T) {
+	t.teardown(() => node.parentNode?.removeChild(node));
+	ref.parentNode!.insertBefore(node, ref);
+	return node;
+}

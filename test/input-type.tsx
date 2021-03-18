@@ -1,6 +1,5 @@
 import test from "ava";
 import { getInputType, InputType, setupInputDetection } from "../src";
-import { state } from "../src/state";
 import { attach, createElement } from "./_utility/html";
 
 const inputTypes = new Map<InputType, string[]>([
@@ -9,17 +8,6 @@ const inputTypes = new Map<InputType, string[]>([
 	["mouse", ["mousedown"]],
 	["touch", ["touchstart"]]
 ]);
-
-test.afterEach(() => {
-	state.inputDetectionTeardown?.();
-	state.inputType = "none";
-	delete document.documentElement.dataset.inputType;
-});
-
-test.before(t => {
-	t.is(getInputType(), "none");
-	t.is(state.inputDetectionTeardown, null);
-});
 
 for (const [type, events] of inputTypes) {
 	for (const event of events) {

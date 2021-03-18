@@ -1,4 +1,5 @@
 import type { InputType } from "./input-type";
+import { NodeTracer } from "./node-tracer";
 
 export interface State {
 	readonly version: number;
@@ -6,6 +7,11 @@ export interface State {
 
 	inputType: InputType;
 	inputDetectionTeardown: (() => void) | null;
+
+	cycleFocus: boolean;
+	focusBehaviorTeardown: (() => void) | null;
+
+	lastActiveElementTracer: NodeTracer;
 }
 
 const key = Symbol.for("@frontspace/input/state");
@@ -13,7 +19,10 @@ export const state: State = (window as any)[key] ?? ((window as any)[key] = <Sta
 	version: 0,
 	inputLayerRoots: [],
 	inputType: "none",
-	inputDetectionTeardown: null
+	inputDetectionTeardown: null,
+	cycleFocus: false,
+	focusBehaviorTeardown: null,
+	lastActiveElementTracer: new NodeTracer()
 });
 
 /* istanbul ignore if */

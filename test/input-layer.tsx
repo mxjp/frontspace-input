@@ -3,7 +3,7 @@ import { InputLayer } from "../src";
 import { state } from "../src/state";
 import { attach, createElement } from "./_utility/html";
 
-test("create & dispose", t => {
+test.serial("create & dispose", t => {
 	const rootA = attach(t, <div />);
 	const rootB = attach(t, <div />);
 
@@ -31,7 +31,7 @@ test("create & dispose", t => {
 	t.is(InputLayer.current, document.body);
 });
 
-test("disallow multiple layers per root", t => {
+test.serial("disallow multiple layers per root", t => {
 	const root = attach(t, <div />);
 	const a = InputLayer.create(root);
 	t.deepEqual(state.inputLayerRoots, [root]);
@@ -47,7 +47,7 @@ test("disallow multiple layers per root", t => {
 	t.not(a, b);
 });
 
-test("blur & reference last active element", t => {
+test.serial("blur & reference last active element", t => {
 	const button = attach(t, <button />);
 	button.focus();
 

@@ -66,6 +66,7 @@ export interface InputDetectionOptions {
  */
 export function setupInputDetection(options: InputDetectionOptions = {}) {
 	state.inputDetectionTeardown?.();
+	state.inputDetectionTeardown = null;
 
 	const indicatorAttributes = options.indicatorAttribute ?? false;
 

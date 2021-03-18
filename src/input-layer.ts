@@ -1,9 +1,12 @@
-import { isOrContains } from "./nodes";
+import { InputTarget, isInputTarget, isOrContains } from "./nodes";
 import { state } from "./state";
 
 /**
  * An input layer represents a part of the document
  * that keyboard interaction is limited too.
+ *
+ * Note, that this will only work correctly, if focus behavior is enabled.
+ * @see setupFocusBehavior
  */
 export class InputLayer {
 	/**
@@ -20,11 +23,11 @@ export class InputLayer {
 	 * restoreFocus(layer.lastActiveElement);
 	 * ```
 	 */
-	public readonly lastActiveElement: HTMLElement | null;
+	public readonly lastActiveElement: InputTarget | null;
 
 	private _disposed = false;
 
-	private constructor(root: Node, lastActiveElement: HTMLElement | null) {
+	private constructor(root: Node, lastActiveElement: InputTarget | null) {
 		this.root = root;
 		this.lastActiveElement = lastActiveElement;
 	}
@@ -63,10 +66,10 @@ export class InputLayer {
 
 		state.inputLayerRoots.push(root);
 
-		let lastActiveElement: HTMLElement | null = null;
-		if (document.activeElement instanceof HTMLElement
-			&& !isOrContains(root, document.activeElement)
-			&& document.activeElement !== document.body) {
+		let lastActiveElement: InputTarget | null = null;
+		if (isInputTarget(document.activeElement)
+			&& document.activeElement !== document.body
+			&& !isOrContains(root, document.activeElement)) {
 
 			lastActiveElement = document.activeElement;
 			document.activeElement.blur();
