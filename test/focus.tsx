@@ -1,7 +1,7 @@
 import test from "ava";
 import { createFocusableElementsWalker, focusNext, focusPrevious, InputLayer, INPUT_KEYBOARD, isFocusable, isFocusUnpreferred, restoreFocus, setupFocusBehavior } from "../src";
 import { state } from "../src/state";
-import { attach, attachAfter, attachBefore, createElement } from "./_utility/html";
+import { attach, attachAfter, attachBefore, createElement, forceHide } from "./_utility/html";
 import { setInputType } from "./_utility/state";
 
 test.serial(`${isFocusable.name}: text node`, t => {
@@ -140,7 +140,6 @@ test.serial(`${restoreFocus.name}: already active element`, t => {
 	setInputType(INPUT_KEYBOARD);
 	const prev = attach(t, <button />);
 	prev.focus();
-	console.log(document.activeElement);
 	t.false(restoreFocus(attach(t, <button />)));
 	t.is(document.activeElement, prev);
 });
@@ -515,10 +514,7 @@ test.serial(`${createFocusableElementsWalker.name}`, t => {
 	attach(t, <div>
 		<input ref={v => elements.push(v)} />
 		<input disabled />
-		<input style="display: none;" />
-		<div style="display: none;">
-			<input />
-		</div>
+		{forceHide(<input />)}
 		<div>
 			<input type="radio" name="test" />
 			<input type="radio" name="test" ref={v => elements.push(v)} checked />

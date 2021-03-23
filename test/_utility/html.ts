@@ -1,9 +1,23 @@
 /// <reference path="./jsx.d.ts" />
 
+const CLIENT_RECTS = Symbol();
+
 import { ExecutionContext } from "ava";
 
 export function createElement(type: string, props: Record<string, any> | null, ...children: any[]): HTMLElement {
 	const element = document.createElement(type);
+
+	// jsdom does not support getClientRects. This is a minimal polyfill needed for
+	// visibility detection that only tests the number of client rects for an element:
+	(element as any)[CLIENT_RECTS] = [{}];
+	Object.defineProperty(element, "getClientRects", {
+		value: () => {
+			if (element.isConnected) {
+				return (element as any)[CLIENT_RECTS];
+			}
+			return [];
+		}
+	});
 
 	if (props) {
 		for (const prop in props) {
@@ -50,4 +64,9 @@ export function attachBefore<T extends Node>(t: ExecutionContext, ref: Node, nod
 	t.teardown(() => node.parentNode?.removeChild(node));
 	ref.parentNode!.insertBefore(node, ref);
 	return node;
+}
+
+export function forceHide<T extends Element>(element: T) {
+	(element as any)[CLIENT_RECTS] = [];
+	return element;
 }
