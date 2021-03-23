@@ -8,5 +8,9 @@ export default {
 	require: [
 		"./test_out/test/_utility/env.js",
 		"./test_out/test/_utility/env-state-cleanup.js"
+	],
+	ignoredByWatcher: [
+		"./src/**/*",
+		"./test/**/*"
 	]
 };
