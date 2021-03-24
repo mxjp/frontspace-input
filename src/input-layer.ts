@@ -1,6 +1,26 @@
 import { InputTarget, isInputTarget, isOrContains } from "./nodes";
 import { state } from "./state";
 
+export interface InputLayerOptions {
+	/**
+	 * Notify other parts of the application by dispatching a custom "create-input-layer" event on the root element that does not bubble.
+	 *
+	 * The input layer instance can be accessed using `event.detail`.
+	 *
+	 * @default true
+	 *
+	 * @example
+	 * ```ts
+	 * window.addEventListener(InputLayer.CREATE_EVENT, ((event: InputLayerCreateEvent) => {
+	 *   console.log("new InputLayer:", event.detail);
+	 * }) as EventListener, { capture: true, passive: true });
+	 * ```
+	 */
+	notify?: boolean;
+}
+
+export type InputLayerCreateEvent = CustomEvent<InputLayer>;
+
 /**
  * An input layer represents a part of the document
  * that keyboard interaction is limited too.
@@ -9,6 +29,8 @@ import { state } from "./state";
  * @see setupFocusBehavior
  */
 export class InputLayer {
+	public static readonly CREATE_EVENT = "create-input-layer";
+
 	/**
 	 * The root node of this input layer.
 	 */
@@ -30,6 +52,44 @@ export class InputLayer {
 	private constructor(root: Node, lastActiveElement: InputTarget | null) {
 		this.root = root;
 		this.lastActiveElement = lastActiveElement;
+	}
+
+	/**
+	 * True if this is the current input layer.
+	 */
+	 public get current() {
+		return this.root === state.inputLayerRoots[state.inputLayerRoots.length - 1];
+	}
+
+	/**
+	 * Add an event listener to the window object that is only called while this is the current layer.
+	 */
+	public addEventListener<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+	public addEventListener(type: string, listener: EventListener, options?: boolean | AddEventListenerOptions): void;
+	public addEventListener(type: string, listener: EventListener, options?: boolean | AddEventListenerOptions) {
+		let wrapper = state.inputLayerListeners.get(listener);
+		if (!wrapper) {
+			wrapper = (event) => {
+				if (this.current) {
+					return listener(event);
+				}
+			};
+			state.inputLayerListeners.set(listener, wrapper);
+		}
+		window.addEventListener(type, wrapper, options);
+	}
+
+	/**
+	 * Remove an event listener from the window object that is only called while this is the current layer.
+	 */
+    public removeEventListener<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    public removeEventListener(type: string, listener: EventListener, options?: boolean | EventListenerOptions): void;
+	public removeEventListener(type: string, listener: EventListener, options?: boolean | EventListenerOptions) {
+		const wrapper = state.inputLayerListeners.get(listener);
+		/* istanbul ignore else */
+		if (wrapper) {
+			window.removeEventListener(type, wrapper, options);
+		}
 	}
 
 	/**
@@ -59,7 +119,7 @@ export class InputLayer {
 	 *
 	 * If an element outside of the specified root is focused, the focus is removed from that element.
 	 */
-	public static create(root: Node) {
+	public static create(root: Node, options: InputLayerOptions = {}) {
 		if (state.inputLayerRoots.includes(root)) {
 			throw new Error("input layer already exists for the specified root node");
 		}
@@ -75,6 +135,12 @@ export class InputLayer {
 			document.activeElement.blur();
 		}
 
-		return new InputLayer(root, lastActiveElement);
+		const layer = new InputLayer(root, lastActiveElement);
+
+		if (options.notify ?? true) {
+			root.dispatchEvent(new CustomEvent<InputLayer>(InputLayer.CREATE_EVENT, { detail: layer }));
+		}
+
+		return layer;
 	}
 }
