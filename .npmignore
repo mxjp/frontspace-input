@@ -1,0 +1,6 @@
+/.nyc*
+/ava*
+/test_out
+/test
+/tsconfig*
+/.github

@@ -1,13 +1,15 @@
 {
 	"name": "@frontspace/input",
-	"description": "Input handling framework",
+	"description": "A library for implementing accessible keyboard input for complex web applications.",
+	"version": "1.0.0",
 	"author": "Max J. Polster",
 	"main": "./dist/index.js",
 	"scripts": {
 		"clean": "rimraf ./dist/**/* ./test_out/**/*",
 		"test": "npm run clean && tsc -p tsconfig-test.json && nyc -- ava -v",
 		"start": "npm run clean && tsc -p tsconfig-test.json && concurrently \"tsc -p tsconfig-test.json -w\" \"ava -w -v\"",
-		"build": "npm run clean && tsc -p tsconfig-es.json"
+		"build": "npm run clean && tsc -p tsconfig-es.json",
+		"prepack": "npm test && npm run build"
 	},
 	"devDependencies": {
 		"@types/jsdom": "^16.2.7",
