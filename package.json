@@ -1,7 +1,7 @@
 {
 	"name": "@frontspace/input",
 	"description": "A library for implementing accessible keyboard input for complex web applications.",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"author": "Max J. Polster",
 	"main": "./dist/index.js",
 	"scripts": {
@@ -12,12 +12,12 @@
 		"prepack": "npm test && npm run build"
 	},
 	"devDependencies": {
-		"@types/jsdom": "^16.2.7",
+		"@types/jsdom": "^16.2.11",
 		"ava": "^3.15.0",
-		"concurrently": "^6.0.0",
-		"jsdom": "^16.5.0",
+		"concurrently": "^6.2.0",
+		"jsdom": "^16.6.0",
 		"nyc": "^15.1.0",
 		"rimraf": "^3.0.2",
-		"typescript": "^4.2.3"
+		"typescript": "^4.3.4"
 	}
 }
