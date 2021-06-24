@@ -11,11 +11,29 @@ export type InputType
 	| typeof INPUT_MOUSE
 	| typeof INPUT_TOUCH;
 
-const inputTypes = new Map<InputType, string[]>([
+const defaultInputTypes = new Map<InputType, string[]>([
 	[INPUT_NONE, []],
 	[INPUT_KEYBOARD, ["keydown"]],
 	[INPUT_MOUSE, ["mousedown"]],
 	[INPUT_TOUCH, ["touchstart"]]
+]);
+
+const defaultIgnoredKeys = new Set([
+	"Unidentified",
+	"Alt",
+	"AltGr",
+	"AltGraph",
+	"CapsLock",
+	"Control",
+	"Fn",
+	"FnLock",
+	"Meta",
+	"OS",
+	"Shift",
+	"Super",
+	"Hyper",
+	"Symbol",
+	"SymbolLock"
 ]);
 
 /**
@@ -43,6 +61,33 @@ export interface InputDetectionOptions {
 	 * ```
 	 */
 	readonly events?: Readonly<Record<InputType, string[]>>;
+
+	/**
+	 * An array of keyboard key values that are ignored by the input detection because these are likely to be used in combination with other input methods for instance control+clicking a link.
+	 *
+	 * @example
+	 * ```ts
+	 * // The following key values are ignored by default:
+	 * ignoredKeys: [
+	 *   "Unidentified",
+	 *   "Alt",
+	 *   "AltGr",
+	 *   "AltGraph",
+	 *   "CapsLock",
+	 *   "Control",
+	 *   "Fn",
+	 *   "FnLock",
+	 *   "Meta",
+	 *   "OS",
+	 *   "Shift",
+	 *   "Super",
+	 *   "Hyper",
+	 *   "Symbol",
+	 *   "SymbolLock"
+	 * ]
+	 * ```
+	 */
+	readonly ignoredKeys?: string[];
 
 	/**
 	 * If true, the `inputType` data attribute is set on the root element. This can be used to access the current input type from within css to show focus indicators only when the keyboard is used consistently across browsers.
@@ -79,9 +124,16 @@ export function setupInputDetection(options: InputDetectionOptions = {}) {
 
 	setInputType(INPUT_NONE);
 
-	const listeners: [string, () => void][] = [];
-	for (const [type, defaultEvents] of inputTypes) {
-		const listener = () => setInputType(type);
+	const ignoredKeys = options.ignoredKeys ? new Set(options.ignoredKeys) : defaultIgnoredKeys;
+
+	const listeners: [string, (event: Event) => void][] = [];
+	for (const [type, defaultEvents] of defaultInputTypes) {
+		const listener = (event: Event) => {
+			if (!(event instanceof KeyboardEvent) || !ignoredKeys.has(event.key)) {
+				setInputType(type);
+			}
+		};
+
 		for (const event of (options.events?.[type] ?? defaultEvents)) {
 			listeners.push([event, listener]);
 			window.addEventListener(event, listener, { capture: true, passive: true });

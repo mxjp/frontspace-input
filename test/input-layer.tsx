@@ -61,7 +61,7 @@ test.serial("blur & reference last active element", t => {
 	t.is(layer.lastActiveElement, button);
 });
 
-test.serial("emits create event by default", t => {
+test.serial("emits create event by default", async t => {
 	const root = attach(t, <div />);
 
 	let event!: CustomEvent<InputLayer>;
@@ -70,7 +70,8 @@ test.serial("emits create event by default", t => {
 	}) as EventListener);
 
 	const layer = InputLayer.create(root);
-	t.true(event instanceof Event);
+
+	t.true(event instanceof CustomEvent);
 	t.false(event.bubbles);
 	t.is(event.target, root);
 	t.is(event.detail, layer);
