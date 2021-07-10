@@ -22,6 +22,9 @@ Input layers are used to temporarily restrict keyboard interaction to all elemen
 ```ts
 import { InputLayer, restoreFocus } ...
 
+// Store the last active element:
+const lastActiveElement = document.activeElement;
+
 // Restrict keyboard interaction to "dialogElement":
 const layer = InputLayer.create(dialogElement);
 
@@ -30,7 +33,7 @@ layer.dispose();
 
 // After removing the restriction, the focus on the element that
 // was focused before creating the input layer should be restored:
-restoreFocus(layer);
+restoreFocus(lastActiveElement);
 ```
 
 # Detached Links
