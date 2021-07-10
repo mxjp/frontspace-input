@@ -224,8 +224,9 @@ export function setupFocusBehavior(options: FocusBehaviorOptions = {}) {
 
 		function onFocus(event: FocusEvent) {
 			if (event.target instanceof Node) {
-				state.lastActiveElementTracer.target = event.target;
-
+				if (trackLastActiveElement) {
+					state.lastActiveElementTracer.target = event.target;
+				}
 				if (preventInvalidFocus && !isOrContains(InputLayer.current, event.target)) {
 					event.preventDefault();
 					event.stopImmediatePropagation();
@@ -237,7 +238,8 @@ export function setupFocusBehavior(options: FocusBehaviorOptions = {}) {
 			}
 		}
 
-		if (trackLastActiveElement) {
+		/* istanbul ignore else */
+		if (trackLastActiveElement || preventInvalidFocus) {
 			window.addEventListener("focus", onFocus, { capture: true, passive: !preventInvalidFocus });
 		}
 
@@ -245,7 +247,8 @@ export function setupFocusBehavior(options: FocusBehaviorOptions = {}) {
 
 		state.focusBehaviorTeardown = () => {
 			window.removeEventListener("keydown", onKeyDown);
-			if (trackLastActiveElement) {
+			/* istanbul ignore else */
+			if (trackLastActiveElement || preventInvalidFocus) {
 				window.removeEventListener("focus", onFocus, { capture: true });
 			}
 		};
