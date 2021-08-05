@@ -119,8 +119,10 @@ export class InputLayer {
 
 	/**
 	 * Remove this input layer from the stack.
+	 *
+	 * @param preserveFocus If false (default), the current active element inside this input layer is unfocused.
 	 */
-	public dispose() {
+	public dispose(preserveFocus = false) {
 		if (!this._disposed) {
 			const index = state.inputLayerRoots.indexOf(this.root);
 			/* istanbul ignore else */
@@ -141,6 +143,13 @@ export class InputLayer {
 				});
 			});
 			this._nonCaptureEventAttachments.clear();
+
+			if (!preserveFocus) {
+				const activeElement = document.activeElement;
+				if (isInputTarget(activeElement) && isOrContains(this.root, activeElement)) {
+					activeElement.blur();
+				}
+			}
 
 			this._disposed = true;
 		}

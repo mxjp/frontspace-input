@@ -206,3 +206,28 @@ test.serial("remove event listeners when disposed", t => {
 	t.is(captureEvents, 1);
 	t.is(nonCaptureEvents, 1);
 });
+
+test.serial("unfocus the current active element inside the input layer when disposed", t => {
+	const root = attach(t, <div>
+		<button></button>
+	</div>);
+	const button = root.querySelector("button")!;
+
+	const containingLayer = InputLayer.create(root);
+	button.focus();
+	t.is(document.activeElement, button);
+	containingLayer.dispose();
+	t.not(document.activeElement, button);
+
+	const focusedLayer = InputLayer.create(button);
+	button.focus();
+	t.is(document.activeElement, button);
+	focusedLayer.dispose();
+	t.not(document.activeElement, button);
+
+	const preservingLayer = InputLayer.create(root);
+	button.focus();
+	t.is(document.activeElement, button);
+	preservingLayer.dispose(true);
+	t.is(document.activeElement, button);
+});
