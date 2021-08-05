@@ -6,8 +6,6 @@ export interface State {
 	readonly version: number;
 	/** Stack of input layer root elements */
 	readonly inputLayerRoots: Node[];
-	/** Map of event listeners to input layer dependant event listener wrappers */
-	readonly inputLayerListeners: WeakMap<EventListener, EventListener>;
 	/** The current detected input type */
 	inputType: InputType;
 	/** Function to dispose the current input detection */
@@ -28,7 +26,6 @@ const key = Symbol.for("@frontspace/input/state");
 export const state: State = (window as any)[key] ?? ((window as any)[key] = <State> {
 	version: 0,
 	inputLayerRoots: [],
-	inputLayerListeners: new WeakMap(),
 	inputType: "none",
 	inputDetectionTeardown: null,
 	cycleFocus: false,

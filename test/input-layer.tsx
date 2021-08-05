@@ -115,3 +115,94 @@ test.serial("event listeners", t => {
 	other.dispatchEvent(new MouseEvent("mousedown"));
 	t.is(events, 3);
 });
+
+test.serial("disable event listeners when not the current layer", t => {
+	const rootA = attach(t, <div />);
+	const rootB = attach(t, <div />);
+
+	const layerA = InputLayer.create(rootA);
+
+	let events = 0;
+	layerA.addEventListener("mousedown", () => events++);
+
+	window.dispatchEvent(new MouseEvent("mousedown"));
+	t.is(events, 1);
+
+	const layerB = InputLayer.create(rootB);
+	window.dispatchEvent(new MouseEvent("mousedown"));
+	t.is(events, 1);
+
+	layerB.dispose();
+	window.dispatchEvent(new MouseEvent("mousedown"));
+	t.is(events, 2);
+});
+
+test.serial("ignores removing non attached event listener", t => {
+	const root = attach(t, <div />);
+	const layer = InputLayer.create(root);
+	layer.removeEventListener("mousedown", () => {}, { capture: true });
+	layer.removeEventListener("mousedown", () => {}, { capture: false });
+	t.pass();
+});
+
+test.serial("manage internal event non capturing listener attachments", t => {
+	const root = attach(t, <div />);
+	const layer = InputLayer.create(root);
+	const listenerA = () => {};
+	const listenerB = () => {};
+
+	layer.addEventListener("mousedown", listenerA);
+	layer.addEventListener("mouseup", listenerA);
+	layer.addEventListener("mouseup", listenerB);
+
+	const wrapperA = layer["_eventListenerWrappers"].get(listenerA)!;
+	t.true(layer["_nonCaptureEventAttachments"].get("mousedown")?.has(wrapperA));
+	t.true(layer["_nonCaptureEventAttachments"].get("mouseup")?.has(wrapperA));
+
+	layer.removeEventListener("mouseup", listenerA);
+	t.false(layer["_nonCaptureEventAttachments"].get("mouseup")?.has(wrapperA));
+
+	layer.removeEventListener("mouseup", listenerB, { capture: false });
+	t.false(layer["_nonCaptureEventAttachments"].has("mouseup"));
+});
+
+test.serial("manage internal event capturing listener attachments", t => {
+	const root = attach(t, <div />);
+	const layer = InputLayer.create(root);
+	const listenerA = () => {};
+	const listenerB = () => {};
+
+	layer.addEventListener("mousedown", listenerA, { capture: true });
+	layer.addEventListener("mouseup", listenerA, { capture: true });
+	layer.addEventListener("mouseup", listenerB, { capture: true });
+
+	const wrapperA = layer["_eventListenerWrappers"].get(listenerA)!;
+	t.true(layer["_captureEventAttachments"].get("mousedown")?.has(wrapperA));
+	t.true(layer["_captureEventAttachments"].get("mouseup")?.has(wrapperA));
+
+	layer.removeEventListener("mouseup", listenerA, { capture: true });
+	t.false(layer["_captureEventAttachments"].get("mouseup")?.has(wrapperA));
+
+	layer.removeEventListener("mouseup", listenerB, { capture: true });
+	t.false(layer["_captureEventAttachments"].has("mouseup"));
+});
+
+test.serial("remove event listeners when disposed", t => {
+	const root = attach(t, <div />);
+	const layer = InputLayer.create(root);
+
+	let captureEvents = 0;
+	let nonCaptureEvents = 0;
+	layer.addEventListener("mousedown", () => captureEvents++, { capture: true });
+	layer.addEventListener("mousedown", () => nonCaptureEvents++, { capture: false });
+
+	window.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+	t.is(captureEvents, 1);
+	t.is(nonCaptureEvents, 1);
+
+	layer.dispose();
+
+	root.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+	t.is(captureEvents, 1);
+	t.is(nonCaptureEvents, 1);
+});

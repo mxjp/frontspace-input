@@ -47,6 +47,13 @@ export class InputLayer {
 	 */
 	public readonly lastActiveElement: InputTarget | null;
 
+	/** Map of event listeners to internal wrappers */
+	private readonly _eventListenerWrappers = new WeakMap<EventListener, EventListener>();
+	/** Map of event types to internal wrappers with the capture option set to true */
+	private readonly _captureEventAttachments = new Map<string, Set<EventListener>>();
+	/** Map of event types to internal wrappers with the capture option set to false */
+	private readonly _nonCaptureEventAttachments = new Map<string, Set<EventListener>>();
+
 	private _disposed = false;
 
 	private constructor(root: Node, lastActiveElement: InputTarget | null) {
@@ -57,38 +64,56 @@ export class InputLayer {
 	/**
 	 * True if this is the current input layer.
 	 */
-	 public get current() {
+	public get current() {
 		return this.root === state.inputLayerRoots[state.inputLayerRoots.length - 1];
 	}
 
 	/**
 	 * Add an event listener to the window object that is only called while this is the current layer.
+	 *
+	 * When this layer is disposed, all event listeners are detached automatically.
 	 */
 	public addEventListener<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-	public addEventListener(type: string, listener: EventListener, options?: boolean | AddEventListenerOptions): void;
-	public addEventListener(type: string, listener: EventListener, options?: boolean | AddEventListenerOptions) {
-		let wrapper = state.inputLayerListeners.get(listener);
-		if (!wrapper) {
-			wrapper = (event) => {
+	public addEventListener(type: string, listener: EventListener, options?: AddEventListenerOptions): void;
+	public addEventListener(type: string, listener: EventListener, options?: AddEventListenerOptions) {
+		let wrapper = this._eventListenerWrappers.get(listener);
+		if (wrapper === undefined) {
+			wrapper = event => {
 				if (this.current) {
 					return listener(event);
 				}
 			};
-			state.inputLayerListeners.set(listener, wrapper);
+			this._eventListenerWrappers.set(listener, wrapper);
 		}
 		window.addEventListener(type, wrapper, options);
+
+		const attachmentsMap = options?.capture ? this._captureEventAttachments : this._nonCaptureEventAttachments;
+		const attachments = attachmentsMap.get(type);
+		if (attachments === undefined) {
+			attachmentsMap.set(type, new Set([wrapper]));
+		} else {
+			attachments.add(wrapper);
+		}
 	}
 
 	/**
 	 * Remove an event listener from the window object that is only called while this is the current layer.
 	 */
     public removeEventListener<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-    public removeEventListener(type: string, listener: EventListener, options?: boolean | EventListenerOptions): void;
-	public removeEventListener(type: string, listener: EventListener, options?: boolean | EventListenerOptions) {
-		const wrapper = state.inputLayerListeners.get(listener);
-		/* istanbul ignore else */
-		if (wrapper) {
+    public removeEventListener(type: string, listener: EventListener, options?: EventListenerOptions): void;
+	public removeEventListener(type: string, listener: EventListener, options?: EventListenerOptions) {
+		const wrapper = this._eventListenerWrappers.get(listener);
+		if (wrapper !== undefined) {
 			window.removeEventListener(type, wrapper, options);
+
+			const attachmentsMap = options?.capture ? this._captureEventAttachments : this._nonCaptureEventAttachments;
+			const attachments = attachmentsMap.get(type);
+			if (attachments !== undefined) {
+				attachments.delete(wrapper);
+				if (attachments.size === 0) {
+					attachmentsMap.delete(type);
+				}
+			}
 		}
 	}
 
@@ -102,6 +127,21 @@ export class InputLayer {
 			if (index >= 0) {
 				state.inputLayerRoots.splice(index, 1);
 			}
+
+			this._captureEventAttachments.forEach((wrappers, type) => {
+				wrappers.forEach(wrapper => {
+					window.removeEventListener(type, wrapper, { capture: true });
+				});
+			});
+			this._captureEventAttachments.clear();
+
+			this._nonCaptureEventAttachments.forEach((wrappers, type) => {
+				wrappers.forEach(wrapper => {
+					window.removeEventListener(type, wrapper);
+				});
+			});
+			this._nonCaptureEventAttachments.clear();
+
 			this._disposed = true;
 		}
 	}
