@@ -1,7 +1,7 @@
 {
 	"name": "@frontspace/input",
 	"description": "A library for implementing accessible keyboard input for complex web applications.",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"author": "Max J. Polster",
 	"main": "./dist/index.js",
 	"scripts": {
