@@ -12,12 +12,12 @@
 		"prepack": "npm test && npm run build"
 	},
 	"devDependencies": {
-		"@types/jsdom": "^16.2.11",
+		"@types/jsdom": "^16.2.13",
 		"ava": "^3.15.0",
 		"concurrently": "^6.2.0",
-		"jsdom": "^16.6.0",
+		"jsdom": "^16.7.0",
 		"nyc": "^15.1.0",
 		"rimraf": "^3.0.2",
-		"typescript": "^4.3.4"
+		"typescript": "^4.3.5"
 	}
 }
