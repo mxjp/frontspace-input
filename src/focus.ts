@@ -269,7 +269,7 @@ export function createFocusableElementsWalker(root: Node, includeUnpreferred = f
 		acceptNode(node) {
 			/* istanbul ignore else */
 			if (isInputTarget(node)) {
-				if (!isElementVisible(node) || (node as any).disabled) {
+				if (!isElementVisible(node) || node.hasAttribute("disabled") || node.hasAttribute("inert")) {
 					return NodeFilter.FILTER_REJECT;
 				}
 
